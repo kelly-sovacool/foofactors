@@ -475,6 +475,7 @@ options(
 <h3>devtools::check() is like R CMD CHECK</h3>
 <p>Checks that the package follows all of the proper conventions.</p>
 <pre class="r"><code>devtools::check()</code></pre>
+<p>If you have 0 warnings, 0 errors, and 0 notes, everything is great! But that’s not likely to happen the first time you run <code>check()</code>.</p>
 </div>
 <div id="document-your-function" class="section level3">
 <h3>Document your function</h3>
@@ -486,6 +487,10 @@ options(
 <div id="lets-add-a-license-too" class="section level4">
 <h4>Let’s add a license too</h4>
 <pre class="r"><code>usethis::use_mit_license()</code></pre>
+<p><code>LICENSE.md</code> is for GitHub, <code>LICENSE</code> (no extension) is for CRAN.</p>
+<p>Let’s <code>check</code> again.</p>
+<pre class="r"><code>devtools::check()</code></pre>
+<p>If everything worked, we’re ready to install the package.</p>
 </div>
 </div>
 <div id="install-the-package-as-if-it-were-on-cran-or-github" class="section level3">
@@ -493,6 +498,23 @@ options(
 <pre class="r"><code>devtools::install()</code></pre>
 <p>Now you can use library!</p>
 <pre class="r"><code>library(foofactors)</code></pre>
+<p>View the documentation in the Help window just like usual:</p>
+<pre class="r"><code>?fbind</code></pre>
+</div>
+<div id="workflow-overview" class="section level3">
+<h3>Workflow Overview</h3>
+<p>While developing the package:</p>
+<ol style="list-style-type: decimal">
+<li>write/modify code</li>
+<li>run <code>devtools::load_all()</code> to mess around with the changes you made</li>
+<li>repeat</li>
+</ol>
+<p>While using your package:</p>
+<ol style="list-style-type: decimal">
+<li>run <code>devtools::install(path/to/pkg)</code></li>
+<li>load it with <code>library(pkgname)</code></li>
+<li>use it in your analysis</li>
+</ol>
 </div>
 </div>
 

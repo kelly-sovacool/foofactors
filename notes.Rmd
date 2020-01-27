@@ -7,6 +7,7 @@ output: html_document
 ```{r render, eval=FALSE, echo=FALSE}
 rmarkdown::render('notes.Rmd', output_dir="docs")
 ```
+
 Taught by Charlotte & Hadley Wickham at `rstudio::conf(2020)`.
 
 - Repo with workshop materials: [https://github.com/rstudio-conf-2020/build-tidy-tools](https://github.com/rstudio-conf-2020/build-tidy-tools)
@@ -147,6 +148,9 @@ Checks that the package follows all of the proper conventions.
 devtools::check()
 ```
 
+If you have 0 warnings, 0 errors, and 0 notes, everything is great!
+But that's not likely to happen the first time you run `check()`.
+
 ### Document your function
 
 Rstudio helper: `Code > Insert roxygen skeleton`
@@ -163,6 +167,15 @@ devtools::document()
 usethis::use_mit_license()
 ```
 
+`LICENSE.md` is for GitHub, `LICENSE` (no extension) is for CRAN.
+
+Let's `check` again. 
+```{r check_again}
+devtools::check()
+```
+
+If everything worked, we're ready to install the package.
+
 ### Install the package as if it were on CRAN or GitHub
 
 ```{r install}
@@ -173,3 +186,23 @@ Now you can use library!
 ```{r library}
 library(foofactors)
 ```
+
+View the documentation in the Help window just like usual:
+```{r help}
+?fbind
+```
+
+### Workflow Overview
+
+While developing the package:
+
+1. write/modify code
+1. run `devtools::load_all()` to mess around with the changes you made
+1. repeat
+
+While using your package:
+
+1. run `devtools::install(path/to/pkg)`
+1. load it with `library(pkgname)`
+1. use it in your analysis
+
