@@ -396,4 +396,32 @@ It works!
 
 Throw errors; fail fast.
 
-The hardest part about testing is writing the tests.
+_**The hardest part about testing is writing the tests.**_
+
+## Document and share
+
+### Document with `roxygen2`
+
+- Write the documentation alongside the code. 
+  - `roxygen` comments start with `#'`.
+  - There are special tags e.g. `@param` and `@examples`.
+- `roxygen2` will parse the comments and turn them into `.Rd` files. (It's a weird format that's kinda like LaTeX but not really. Editing them manually is not recommended.)
+- `R` then renders them into HTML so they look pretty in the Help pane.
+
+See more in the [`R Packages man chapter`](https://r-pkgs.org/man.html).
+
+### Render documentation
+
+`devtools::document()` or `Cmd + Shift + D`
+
+### Practice
+
+**Now switching to the `fordogs` package.**
+
+1. Fix the typos in the `fbind` function.
+1. Render the documentation: `devtools::document()`.
+1. View the new doc: `?fbind`.
+
+
+Not every function in your package has to be available for users.
+For ones that are user-facing, include the `@export` tag.
