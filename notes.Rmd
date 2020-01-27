@@ -2,7 +2,10 @@
 title: "Notes on Building Tidy Tools"
 author: "Kelly Sovacool"
 date: "27-28 Jan. 2020"
-output: html_document
+output:
+  html_document:
+    toc: true
+    toc_float: true
 ---
 ```{r render, eval=FALSE, echo=FALSE}
 rmarkdown::render('notes.Rmd', output_dir="docs")
@@ -11,6 +14,7 @@ rmarkdown::render('notes.Rmd', output_dir="docs")
 Taught by Charlotte & Hadley Wickham at `rstudio::conf(2020)`.
 
 - Repo with workshop materials: [https://github.com/rstudio-conf-2020/build-tidy-tools](https://github.com/rstudio-conf-2020/build-tidy-tools)
+- [RStudio Community Thread](https://community.rstudio.com/t/building-tidy-tools-workshop-rstudio-conf-2020/49091)
 - 2nd edition of Hadley's [R Packages book](https://r-pkgs.org/index.html)
 
 ```{r setup, include=FALSE}
@@ -134,12 +138,20 @@ Let's create a new function called `fbind`.
 usethis::use_r("fbind")
 ```
 
+In `R/fbind.R`:
+```{r}
+fbind <- function(a, b) {
+  factor(c(as.character(a), as.character(b)))
+}
+```
 ### Load the functions in the package
 
 (not quite like installing the package)
 ```{r load}
 devtools::load_all()
 ```
+
+Keyboard shortcut: `Cmd + Shift + L`
 
 ### devtools::check() is like R CMD CHECK
 
@@ -206,3 +218,140 @@ While using your package:
 1. load it with `library(pkgname)`
 1. use it in your analysis
 
+## Unit Testing
+
+Why? Automate!
+
+Example: writing functions for inserting columns into dataframes.
+
+```{r}
+usethis::use_r("insert_into")
+```
+
+in `R/insert_into.R`:
+```{r insert_into}
+insert_into <- function(x, y, where = 1) {
+    if (where == 1) { # first col
+        cbind(y, x)
+    } else if (where > ncol(x)) { # last col
+        cbind(x, y)
+    } else {
+        lhs <- 1:(where - 1)
+        cbind(x[lhs], y, x[-lhs])
+    }
+}
+```
+
+Manually sourcing your code and running simple test cases is tedious.
+
+Let's write unit tests instead!
+
+### Setup testing infrastructure
+
+```{r use_test}
+usethis::use_test("insert_into.R")
+```
+
+It created a file `tests/testthat/test-insert_into.R` with some boilerplate code to modify:
+```{r}
+test_that("multiplication works", {
+  expect_equal(2 * 2, 4)
+})
+```
+(You should replace this with a test that's actually useful for your code.)
+
+Every file in `R/` should have a corresponding testfile in `tests/testthat/`.
+
+Now whenever you run `devtools::check()`, it will also run all the unit tests.
+
+```{r}
+devtools::check()
+```
+
+#### Now let's write a useful test
+
+in `tests/testthat/test-insert_into.R`:
+```{r}
+test_that("can add column at any position", {
+    df1 <- data.frame(a = 3, b = 4, c = 5)
+    df2 <- data.frame(X = 1, Y = 2)
+    at_pos <- function(i) {
+        insert_into(df1, df2, where = i)
+    }
+
+    expect_named(at_pos(1), c("X", "Y", "a", "b", "c"))
+    expect_named(at_pos(2), c("a", "X", "Y", "b", "c"))
+    expect_named(at_pos(3), c("a", "b", "X", "Y", "c"))
+})
+```
+
+### Run the test
+
+#### Test just one file
+```{r test_file}
+# with no argument, it'll assume you want to test that file you currently have open
+devtools::test_file("R/insert_into.R")
+```
+
+#### Test everything without running the other checks
+
+```{r}
+devtools::test()
+```
+Keyboard shortcut: `Cmd + Shift + T`
+
+### Test coverage
+
+How well are we testing the codebase?
+
+#### Test the coverage of a source file
+```{r}
+devtools::test_coverage_file("R/insert_into.R")
+```
+
+```{r}
+devtools::test_coverage() 
+```
+
+#### Report test coverage with Travis CI
+
+Have to use [Travis CI](https://travis-ci.org) for this to work (that's beyond the scope of this workshop).
+```{r}
+usethis::use_travis()
+usethis::use_coverage()
+```
+
+Coverage builds confidence that your code does what it's supposed to do and 
+guides contributors on what parts of the code need new test cases.
+
+### Test-Driven Development 
+
+TDD: Write the tests, then write the code.
+
+#### Write tests for the `add_col()` function
+
+```{r}
+usethis::use_test("add_col")
+```
+
+tests in `tests/testthat/test-add_col.R`:
+```{r}
+test_that("where controls position", {
+ df <- data.frame(x = 1)
+ expect_equal(
+ add_col(df, "y", 2, where = 1),
+ data.frame(y = 2, x = 1)
+ )
+ expect_equal(
+ add_col(df, "y", 2, where = 2),
+ data.frame(x = 1, y = 2)
+ )
+}) 
+```
+
+We haven't written the function yet, so right now it fails:
+```{r}
+devtools::test_file("tests/testthat/test-add_col.R")
+```
+
+#### Now implement `add_col()`
