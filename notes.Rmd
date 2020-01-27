@@ -351,7 +351,49 @@ test_that("where controls position", {
 
 We haven't written the function yet, so right now it fails:
 ```{r}
-devtools::test_file("tests/testthat/test-add_col.R")
+devtools::test()
 ```
 
 #### Now implement `add_col()`
+
+```{r}
+usethis::use_r("add_col")
+```
+
+First attempt implentation:
+```{r}
+add_col <- function(x, name, value, where) {
+    df2 <- data.frame(name=value)
+    insert_into(x, df2, where=where)
+}
+```
+
+#### Run the tests 
+
+`Cmd + Shift + T` or `devtools::test()`
+
+Doesn't work...
+
+#### Modify the code
+
+Second attempt:
+```{r}
+add_col <- function(x, name, value, where) {
+    df2 <- data.frame(x=value)
+    names(df2) <- name
+    insert_into(x, df2, where=where)
+}
+```
+
+#### Run the tests again
+```{r}
+devtools::test()
+```
+
+It works!
+
+### What about bad inputs?
+
+Throw errors; fail fast.
+
+The hardest part about testing is writing the tests.
