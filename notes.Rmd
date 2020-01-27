@@ -1,0 +1,175 @@
+---
+title: "Notes on Building Tidy Tools"
+author: "Kelly Sovacool"
+date: "27-28 Jan. 2020"
+output: html_document
+---
+```{r render, eval=FALSE, echo=FALSE}
+rmarkdown::render('notes.Rmd', output_dir="docs")
+```
+Taught by Charlotte & Hadley Wickham at `rstudio::conf(2020)`.
+
+- Repo with workshop materials: [https://github.com/rstudio-conf-2020/build-tidy-tools](https://github.com/rstudio-conf-2020/build-tidy-tools)
+- 2nd edition of Hadley's [R Packages book](https://r-pkgs.org/index.html)
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, eval=FALSE)
+```
+
+## Libraries & Packages
+
+```{r}
+.Library
+.libPaths()
+```
+```{r before_lib}
+data.frame(env=search(), path=searchpaths())
+```
+```{r after_lib}
+library(dplyr)
+data.frame(env=search(), path=searchpaths())
+```
+
+## R setup stuff to make your life easier
+
+### Open .Rprofile
+```{r}
+usethis::edit_r_profile()
+```
+
+### Require devtools in your .Rprofile
+```{r}
+usethis::use_devtools()
+usethis::use_partial_warnings()
+```
+
+### Tell usethis about yourself
+
+In your .Rprofile:
+
+```{r who}
+options(
+  usethis.full_name = "Jane Doe",
+  usethis.protocol  = "ssh",
+  usethis.description = list(
+    `Authors@R` = 'person("Jane", "Doe", email = "jane@example.com", role = c("aut", "cre"), 
+    comment = c(ORCID = "YOUR-ORCID-ID"))',
+    Version = "0.0.0.9000"
+  )
+)
+```
+
+See [`usethis` setup docs](https://usethis.r-lib.org/articles/articles/usethis-setup.html)
+
+### Restart R completely fresh with an empty environment OFTEN
+
+Options in global settings:
+- Don't Restore `.RData` at startup
+- Don't save your workspace on exit
+
+Better for reproducibility. 
+[Also prevents fires!](https://twitter.com/hadleywickham/status/940021008764846080)
+
+### My .Rprofile now looks like this:
+
+```{r Rprofile}
+if (interactive()) {
+    suppressMessages(require(devtools))
+    suppressMessages(require(testthat))
+}
+options(
+    warnPartialMatchArgs = TRUE,
+    warnPartialMatchDollar = TRUE,
+    warnPartialMatchAttr = TRUE
+)
+options(
+    usethis.full_name = "Kelly L. Sovacool",
+    usethis.protocol  = "ssh",
+    usethis.description = list(
+        `Authors@R` = 'person("Kelly", "Sovacool", email = "sovacool@umich.edu", role = c("aut", "cre"),
+    comment = c(ORCID = "0000-0003-3283-829X"))',
+        Version = "0.0.0.9000"
+    )
+)
+```
+
+### sitrep functions
+
+#### project sitrep
+```{r}
+usethis::proj_sitrep()
+```
+
+#### Add `.RData` & `.DS_Store` to `.gitignore`
+```{r}
+usethis::git_vaccinate() 
+```
+
+#### git sitrep
+```{r}
+usethis::git_sitrep()
+```
+
+## What bulding a package looks like from start to finish
+
+["The Whole Game"](https://r-pkgs.org/whole-game.html)
+
+### Create a new, empty package
+```{r create_package}
+usethis::create_package("~/Desktop/foofactors")
+```
+
+This opened the `foofactors` project in a new R session (switch there now).
+
+### Make it a git repo 
+```{r git_init}
+usethis::use_git()
+```
+
+Let's create a new function called `fbind`.
+
+### Create a new R file 
+```{r}
+usethis::use_r("fbind")
+```
+
+### Load the functions in the package
+
+(not quite like installing the package)
+```{r load}
+devtools::load_all()
+```
+
+### devtools::check() is like R CMD CHECK
+
+Checks that the package follows all of the proper conventions.
+```{r check}
+devtools::check()
+```
+
+### Document your function
+
+Rstudio helper: `Code > Insert roxygen skeleton`
+
+#### Then build the documentation
+
+```{r document}
+devtools::document()
+```
+
+#### Let's add a license too
+
+```{r license}
+usethis::use_mit_license()
+```
+
+### Install the package as if it were on CRAN or GitHub
+
+```{r install}
+devtools::install()
+```
+
+Now you can use library!
+```{r library}
+library(foofactors)
+```
